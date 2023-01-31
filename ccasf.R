@@ -8,6 +8,9 @@ case_flipper <- function(x){
 
 
 check_comp_asf <- function(x,b){
+  #if(!is.inus(b, selectCases(x))){
+  #  return(FALSE)
+  #  }
   if(length(x)==0 | is.submodel(b,x)){
     return(TRUE)
   }
@@ -16,9 +19,9 @@ check_comp_asf <- function(x,b){
   tar_outs_flipped <- sapply(tar_outs, case_flipper)
   tar_lhss <- lhs(tar_asfs)
   cand_lhs <- lhs(b)
-  cand_disjs <- unlist(strsplit(cand_lhs, "+"))
-  cand_disjs <- cand_disjs[-which(cand_disjs %in% c("+","*"))]
-  cand_conjs <- unlist(strsplit(cand_disjs, ""))
+  cand_disjs <- unlist(strsplit(cand_lhs, "\\+"))
+  cand_conjs <- unlist(strsplit(cand_disjs, "\\*"))
+  
   cand_out <- rhs(b)
   outcome_match <- which(tar_outs==cand_out)
   
