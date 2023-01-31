@@ -8,9 +8,9 @@ case_flipper <- function(x){
 
 
 check_comp_asf <- function(x,b){
-  #if(!is.inus(b, selectCases(x))){
-  #  return(FALSE)
-  #  }
+  if(!is.inus(b, selectCases(x))){
+   return(FALSE)
+   }
   if(length(x)==0 | is.submodel(b,x)){
     return(TRUE)
   }
@@ -90,7 +90,9 @@ check_comp_asf <- function(x,b){
   } else {
     rec_target <- new_tar_asfs
   }
-  check_comp_asf(rec_target, b)
+  out <- is.submodel(b, rec_target)
+  attributes(out) <- NULL
+  return(out)
 }
 
 
