@@ -50,9 +50,9 @@ check_comp_asf <- function(x,b){
                                function(x) 
                                  grepl(x, ultimate_lhs))
     sub_from_capflip[which(not_subbable)] <- FALSE
-    if(!any(c(sub_from_capmatch, sub_from_capflip))){
-      return(FALSE)
-    }
+    # if(!any(c(sub_from_capmatch, sub_from_capflip))){
+    #   return(FALSE)
+    # }
     subbing_from <- unique(c(which(sub_from_capmatch), which(sub_from_capflip))) 
     idx_sub_from[subbing_from] <- TRUE
     #sub_alts_capmatch <- vector("character", length(which(sub_from_capmatch)))

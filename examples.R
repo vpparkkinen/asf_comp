@@ -37,6 +37,10 @@ x <- "(D*F+a*b<->C)*(F*c<->G)*(B*f+D*c+a*c<->E)"
 b <-"D*f+d*B<->E"
 check_comp_asf(x, b)
 
+x <- "(C*e*f+E*F*c+F*c*g<->B)*(B*e+E*G*c<->D)*(F*G+d*e<->A)"
+
+b <- "e*b+F*G<->A"
+check_comp_asf(x,b)
 
 
 
