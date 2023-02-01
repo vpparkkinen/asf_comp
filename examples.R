@@ -1,46 +1,56 @@
 
-x <-  "(T+R<->Y)*(A+Y*K<->C)*(C*H+C*I<->E)"
-is.inus(x)
-b <- "H*T+A*I<->E"
-b <- "C*H+I*T<->E"
+y <-  "(T+R<->Y)*(A+Y*K<->C)*(C*H+C*I<->E)"
+is.inus(y)
+x <- "H*T+A*I<->E"
+x <- "C*H+I*T<->E"
 
-x <- "(C*A+B<->R)*(R+B+X<->Y)*(Y*N+B*n<->L)*(L*a*b+U<->E)"
-b <- "A+B<->E"
-check_comp_asf(x,b)
-x <- "(A+B<->C)*(C+X<->E)*(E*R*T*x+X*a*b+Y*a*b<->Z)"
-b <- "A+X<->Z"
+y <- "(C*A+B<->R)*(R+B+X<->Y)*(Y*N+B*n<->L)*(L*a*b+U<->E)"
+x <- "A+B<->E"
+check_comp_asf(x,y)
+y <- "(A+B<->C)*(C+X<->E)*(E*R*T*x+X*a*b+Y*a*b<->Z)"
+x <- "A+X<->Z"
 
 
-x <- "(T+R<->Y)*(A+B<->C)*(t*C+a*Y<->E)"
-b <- "A+T<->E"
-check_comp_asf(x,b)
-x <- "(L+B<->A)*(T+A+R<->Y)*(X+Y<->C)*(t*C+A<->E)"
-b <- "L+T<->E"
-check_comp_asf(x,b)
-x <- "(A+B<->C)*(T+R<->Y)*(C*Y+c*y<->E)"
-b <-  "t*r+C<->E"
-check_comp_asf(x,b)
-x <- "(A*X+B<->C)*(C+A*R<->Y)*(C*a*U+Z*y<->E)"
-is.inus(x)
-b <- "R<->E"
-check_comp_asf(x,b)
-x <- "(A*b+B*a+A*C<->D)*(D+E<->F)"
-b <- "A*b+B*a+B*C<->F"
-check_comp_asf(x,b)
-x <- "(A+B*F<->C)*(D+B*f<->E)*(C+E<->G)"
-b <- "A+B*F<->G"
+y <- "(T+R<->Y)*(A+B<->C)*(t*C+a*Y<->E)"
+x <- "A+T<->E"
+check_comp_asf(x,y)
+y <- "(L+B<->A)*(T+A+R<->Y)*(X+Y<->C)*(T*C+A<->E)"
+x <- "L+T<->E"
+check_comp_asf(x,y)
+y <- "(A+B<->C)*(T+R<->Y)*(C*Y+c*y<->E)"
+x <-  "t*r+C<->E"
+check_comp_asf(x,y)
+y <- "(A*X+B<->C)*(C+A*R<->Y)*(C*a*U+Z*y<->E)"
+is.inus(y)
+x <- "R<->E"
+check_comp_asf(x,y)
+y <- "(A*b+B*a+A*C<->D)*(D+E<->F)"
+x <- "A*b+B*a+B*C<->F"
+check_comp_asf(x,y)
+y <- "(A+B*F<->C)*(D+B*f<->E)*(C+E<->G)"
+x <- "A+B*F<->G"
 
-check_comp_asf(x, b)
+check_comp_asf(x,y)
 
-is.inus(b, selectCases(x))
-x <- "(D*F+a*b<->C)*(F*c<->G)*(B*f+D*c+a*c<->E)"
-b <-"D*f+d*B<->E"
-check_comp_asf(x, b)
+is.inus(x, selectCases(y))
+y <- "(D*F+a*b<->C)*(F*c<->G)*(B*f+D*c+a*c<->E)"
+x <-"D*f+d*B<->E"
+check_comp_asf(x,y)
 
-x <- "(C*e*f+E*F*c+F*c*g<->B)*(B*e+E*G*c<->D)*(F*G+d*e<->A)"
+y <- "(C*e*f+E*F*c+F*c*g<->B)*(B*e+E*G*c<->D)*(F*G+d*e<->A)"
 
-b <- "e*b+F*G<->A"
-check_comp_asf(x,b)
+x <- "e*b+F*G<->A"
+check_comp_asf(x,y)
+
+y <- "(E*c*d+a*c+a*d*g<->F)*(A*F+D*E*g+a*d*f<->B)"
+x <- "A*F+a*d*G+E*D*g<->B"
+check_comp_asf(x,y)
+
+
+### check_ccomp()
+y <- "(L+B<->A)*(T+A+R<->Y)*(X+Y<->C)*(T*C+A<->E)"
+x <- "(L+B<->Y)*(Y+X<->E)"
+check_ccomp(x,y)
 
 
 
