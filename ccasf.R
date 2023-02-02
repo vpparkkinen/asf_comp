@@ -27,6 +27,8 @@ ccheck_prep <- function(x,y){
 
 
 check_ccomp <- function(x,y){
+  x <- noblanks(x)
+  y <- noblanks(y)
   #cand_asfs <- unlist(extract_asf(x))
   out <- vector("logical", 1)
   attributes(out) <- list(why = "", 

@@ -61,9 +61,13 @@ x <- "R+C<->E"
 check_comp_asf(x, y)
 
 y <- "(A+B<->C)*(C+D<->E)*(E+F<->G)*(G+H<->I)"
-x <- "(A+D<->E)*(C+F<->I)"
+x <- "(C+E<->G)*(G+F<->I)"
 check_ccomp(x,y)
 is.inus(x, selectCases(y))
+
+y <- "(A + B <-> C)*(C + Z <-> F)*(C + D <-> E)"
+x <- "(A + B <-> F)*(A + D <-> E)"
+check_ccomp(x,y)
 
 
 target <- "(A + B*D <->C)*(C+D <->G)"
