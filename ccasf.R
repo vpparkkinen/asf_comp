@@ -6,6 +6,7 @@ case_flipper <- function(x){
   return(out)
 }
 
+
 decompose_model <- function(x){
   x <- noblanks(x)
   asfs <- unlist(extract_asf(x))
@@ -39,6 +40,7 @@ ccheck_prep <- function(x,y){
               no_sub = not_subbable)
   return(out)
 }
+
 
 check_ccomp <- function(x,y){
   x <- noblanks(x)
@@ -78,7 +80,6 @@ check_ccomp <- function(x,y){
                                          prepared$no_sub)
     correct[i] <- is.submodel(prepared$candidate_asfs[i], subbed_tar_asfs[i])
   }
-  
   parts_correct <- c(correct, asf_subms[asf_subms])
   names(parts_correct) <- prepared$candidate_asfs
   out[1] <- all(parts_correct)
@@ -98,6 +99,7 @@ lit_extract <- function(lhs){
   out <- unlist(strsplit(d, "\\*"))
   return(out)
 }
+
 
 check_comp_asf <- function(x, y, not_subbable){
   tar_lhss <- y
@@ -137,7 +139,11 @@ check_comp_asf <- function(x, y, not_subbable){
       }  
     }
   }
-  subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)))
+  ogy <- paste0(tar_lhss, "<->", names(tar_lhss)) #stupid hack must go
+  ogy <- paste0("(", ogy, ")")
+  ogy <- paste0(ogy, collapse = "*")
+  subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), 
+                        selectCases(ogy), full = FALSE)
   out <- paste0(subbed_lhs, "<->", tar_outs[outcome_match])
   return(out)
 }
@@ -145,11 +151,19 @@ check_comp_asf <- function(x, y, not_subbable){
 
 substitute_all <- function(x){
   x <- decompose_model(x)
-  substituter(x)
+  subbed <- chain_substituter(x)
+  lhss <- subbed$lhss
+  dnf_lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))
+  d <- data.frame(dnf_lhss, subbed$rhss)
+  new_asfs <- do.call("paste", c(d, sep = "<->"))
+  new_asfs <- paste0("(", new_asfs, ")")
+  new_csf <- paste0(new_asfs, collapse = "*")
+  return(new_csf)
 }
 
 
-substituter <- function(x, subbed_from = vector("logical", length(x[[1]]))){
+chain_substituter <- function(x, 
+                              subbed_from = vector("logical", length(x[[1]]))){
   sub_from_capmatch <- lapply(x$rhss, 
                               function(y) 
                                 grepl(y, x$lhss))
@@ -172,8 +186,8 @@ substituter <- function(x, subbed_from = vector("logical", length(x[[1]]))){
   }
   for(i in seq_along(sub_from_capflip)){
     if(id_sub_capflip[i]){
-      x$lhss[sub_from_capflip[[i]]] <- gsub(x$rhss[i], 
-                                             paste0("!(", x$lhss[1], ")"), 
+      x$lhss[sub_from_capflip[[i]]] <- gsub(tolower(x$rhss[i]), 
+                                             paste0("!(", x$lhss[i], ")"), 
                                              x$lhss[sub_from_capflip[[i]]])
     } 
   }
@@ -182,8 +196,7 @@ substituter <- function(x, subbed_from = vector("logical", length(x[[1]]))){
   wh_capflip <- which(id_sub_capflip)
   w_subbed <- unique(c(wh_subbed_from, wh_capmatch, wh_capflip))
   subbed_from[w_subbed] <- TRUE 
-  substituter(x, subbed_from = subbed_from)
-  
+  chain_substituter(x, subbed_from = subbed_from)
 }
 
 

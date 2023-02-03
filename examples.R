@@ -28,8 +28,8 @@ y <- "(A*b+B*a+A*C<->D)*(D+E<->F)"
 x <- "A*b+B*a+B*C<->F"
 check_ccomp(x,y)
 y <- "(A+B*F<->C)*(D+B*f<->E)*(C+E<->G)"
-x <- "A+B*F<->G"
-
+x <- "(A+B*F<->C)*(C+E<->G)"
+x <- "A+B*F+E<->G"
 check_ccomp(x,y)
 
 is.inus(x, selectCases(y))
@@ -78,9 +78,23 @@ td <- selectCases(target)
 x <- "(A+B<->C)*(C+D<->E)*(E+F<->G)*(G+H+C<->I)"
 r <- "(E+F<->G)*(A+B<->C)*(C+D<->E)*(G+H+C<->I)"
 
+y <- "(A+B<->C)*(C+D<->E)*(X+F<->G)*(G+H+c<->I)"
+x <- "(G+c<->I)*(C+D<->E)"
+
+y2 <- "(A+B<->C)*(C+D<->E)*(X+F<->G)*(G+c<->I)"
+
+yt2 <- substitute_all(y2)
+
+yt <- substitute_all(y)
+is.submodel(yt2, yt)
 a <- substitute_all(x)
 b <- substitute_all(r)
 substitute_all(y)
-all.equal(substitute_all(x), substitute_all(r))
+all.equal(a,b)
 
-substitute_all(x)
+a <- substitute_all(x)
+b <- substitute_all(y)
+is.submodel(y,a)
+
+
+
