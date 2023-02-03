@@ -6,13 +6,28 @@ case_flipper <- function(x){
   return(out)
 }
 
+decompose_model <- function(x){
+  x <- noblanks(x)
+  asfs <- unlist(extract_asf(x))
+  rhss <- rhs(asfs)
+  lhss <- lhs(asfs)
+  lhs_lits <- lit_extract(lhss)
+  out <- list(asfs = asfs, 
+              rhss = rhss, 
+              lhss = lhss)
+  return(out)
+}
+
+
 ccheck_prep <- function(x,y){
-  tar_asfs <- unlist(extract_asf(y))
-  tar_outs <- rhs(tar_asfs)
-  tar_lhss <- lhs(tar_asfs)
-  cand_asfs <- unlist(extract_asf(x))
-  cand_outs <- rhs(cand_asfs)
-  cand_lhss <- lhs(cand_asfs)
+  tar_decomp <- decompose_model(y)
+  cand_decomp <- decompose_model(x)
+  tar_asfs <- tar_decomp$asfs
+  tar_outs <- tar_decomp$rhss
+  tar_lhss <- tar_decomp$lhss
+  cand_asfs <- cand_decomp$asfs
+  cand_outs <- cand_decomp$rhss
+  cand_lhss <- cand_decomp$lhss
   names(cand_lhss) <- cand_outs
   cand_facs <- lit_extract(cand_lhss)
   not_subbable <- toupper(tar_outs) %in% toupper(cand_facs)
@@ -25,11 +40,9 @@ ccheck_prep <- function(x,y){
   return(out)
 }
 
-
 check_ccomp <- function(x,y){
   x <- noblanks(x)
   y <- noblanks(y)
-  #cand_asfs <- unlist(extract_asf(x))
   out <- vector("logical", 1)
   attributes(out) <- list(why = "", 
                           x = x, 
@@ -55,17 +68,8 @@ check_ccomp <- function(x,y){
     return(out)
   }
   prepared <- ccheck_prep(x,y)
-  
-  # if(length(prepared$candidate_lhss) == 1){
-  #   out <- check_comp_asf(prepared$candidate_lhss, prepared$target_lhss)
-  #   return(out)
-  # }
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
-  
-  # subbed_tar_asfs <- sapply(prepared$candidate_lhss[!asf_subms], 
-  #                        function(f) check_comp_asf(f, prep_target))
-  
   subbed_tar_asfs <- vector("character", length(prepared$candidate_lhss[!asf_subms]))
   correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
   for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
@@ -96,56 +100,18 @@ lit_extract <- function(lhs){
 }
 
 check_comp_asf <- function(x, y, not_subbable){
-  # if(!is.inus(x, selectCases(y))){
-  #  return(FALSE)
-  #  }
-  # if(is.submodel(names(x), ogy)){
-  #   return(TRUE)
-  # }
-  # tar_asfs <- unlist(extract_asf(y))
-  # tar_outs <- rhs(tar_asfs)
-  # tar_outs_flipped <- sapply(tar_outs, case_flipper)
-  # tar_lhss <- lhs(tar_asfs)
-  # cand_lhs <- lhs(x)
-  # cand_disjs <- unlist(strsplit(cand_lhs, "\\+"))
-  # cand_conjs <- unlist(strsplit(cand_disjs, "\\*"))
-  # 
-  # cand_out <- rhs(x)
-  # outcome_match <- which(tar_outs==cand_out)
   tar_lhss <- y
   tar_outs <- names(y)
   tar_outs_flipped <- sapply(tar_outs, case_flipper)
   cand_out <- names(x)
   outc_matches <- tar_outs %in% cand_out
-  if(!any(outc_matches)){return}
   outcome_match <- which(tar_outs %in% cand_out)
   
   ultimate_lhs <- y[outcome_match]
   idx_sub_from <- vector("logical", length(tar_outs))
-  # if(is.null(not_subbable)){
-  #   not_subbable <- vector("logical", length(tar_outs))
-  # }
-  #    
-  # if(!any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
-  #                                                               "")))){
-  #   return(FALSE)
-  # }
-  
-  # if(!any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
-  #                                                               "")))){
-  #   return(FALSE)
-  # }
   
   while(any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
                                                      "")))){
-    # not_sub_ccon <- sapply(cand_conjs,
-    #                        function(y) grepl(toupper(y), 
-    #                                          toupper(ultimate_lhs)))
-    # conj_in_ultasf <- paste0(names(which(not_sub_ccon)))
-    # not_subbable <- lapply(tar_outs,
-    #                        function(y)
-    #                          grepl(toupper(y), toupper(conj_in_ultasf)))
-    # not_subbable <- unlist(lapply(not_subbable, any))
     sub_from_capmatch <- sapply(tar_outs, 
                                 function(y) 
                                   grepl(y, ultimate_lhs))
@@ -154,12 +120,8 @@ check_comp_asf <- function(x, y, not_subbable){
                                function(y) 
                                  grepl(y, ultimate_lhs))
     sub_from_capflip[which(not_subbable)] <- FALSE
-    # if(!any(c(sub_from_capmatch, sub_from_capflip))){
-    #   return(FALSE)
-    # }
     subbing_from <- unique(c(which(sub_from_capmatch), which(sub_from_capflip))) 
     idx_sub_from[subbing_from] <- TRUE
-    #sub_alts_capmatch <- vector("character", length(which(sub_from_capmatch)))
     if(any(sub_from_capmatch)){
       for(i in which(sub_from_capmatch)){
         ultimate_lhs <- gsub(tar_outs[i],
@@ -167,8 +129,6 @@ check_comp_asf <- function(x, y, not_subbable){
                              ultimate_lhs)
       }  
     }
-    
-    #sub_alts_capflip <- vector("character", length(which(sub_from_capflip)))
     if(any(sub_from_capflip)){
       for(i in which(sub_from_capflip)){
         ultimate_lhs <- gsub(tar_outs_flipped[i], 
@@ -176,34 +136,55 @@ check_comp_asf <- function(x, y, not_subbable){
                             ultimate_lhs)
       }  
     }
-    #all_subbed <- paste0("(", c(sub_alts_capmatch, sub_alts_capflip), ")")
-    #all_subbed <- paste0(all_subbed, collapse = "+")
-    #ultimate_lhs <- all_subbed  
   }
-
-  
   subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)))
-  #subbed_asf <- paste0(subbed_lhs, "<->", tar_outs[outcome_match])
   out <- paste0(subbed_lhs, "<->", tar_outs[outcome_match])
-  #idx_sub_from <- unique(c(which(sub_from_capmatch), which(sub_from_capflip)))
-  
-  # new_tar_asfs <- tar_asfs
-  # new_tar_asfs[outcome_match] <- subbed_asf
-  # new_tar_asfs <- new_tar_asfs[!idx_sub_from]
-  # if(length(new_tar_asfs) > 1){
-  #   new_tar_asfs <- paste0("(", new_tar_asfs, ")")
-  #   rec_target <- paste0(new_tar_asfs, collapse = "*")
-  # } else {
-  #   rec_target <- new_tar_asfs
-  # }
-  # out <- rec_target
-  # out <- is.submodel(x, rec_target)
-  # attributes(out) <- NULL
   return(out)
 }
 
 
+substitute_all <- function(x){
+  x <- decompose_model(x)
+  substituter(x)
+}
 
+
+substituter <- function(x, subbed_from = vector("logical", length(x[[1]]))){
+  sub_from_capmatch <- lapply(x$rhss, 
+                              function(y) 
+                                grepl(y, x$lhss))
+  id_sub_capmatch <- unlist(lapply(sub_from_capmatch, any))
+  
+  sub_from_capflip <- lapply(case_flipper(x$rhss), 
+                             function(y) 
+                               grepl(y, x$lhss))
+  id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
+  if(!any(c(id_sub_capflip, id_sub_capmatch))){
+    x <- lapply(x, function(y){y <- y[!subbed_from]; return(y)})
+    return(x)
+  }
+  for(i in seq_along(sub_from_capmatch)){
+    if(id_sub_capmatch[i]){
+      x$lhss[sub_from_capmatch[[i]]] <- gsub(x$rhss[i], 
+                                              paste0("(", x$lhss[i], ")"), 
+                                              x$lhss[sub_from_capmatch[[i]]])
+    } 
+  }
+  for(i in seq_along(sub_from_capflip)){
+    if(id_sub_capflip[i]){
+      x$lhss[sub_from_capflip[[i]]] <- gsub(x$rhss[i], 
+                                             paste0("!(", x$lhss[1], ")"), 
+                                             x$lhss[sub_from_capflip[[i]]])
+    } 
+  }
+  wh_subbed_from <- which(subbed_from)
+  wh_capmatch <- which(id_sub_capmatch)
+  wh_capflip <- which(id_sub_capflip)
+  w_subbed <- unique(c(wh_subbed_from, wh_capmatch, wh_capflip))
+  subbed_from[w_subbed] <- TRUE 
+  substituter(x, subbed_from = subbed_from)
+  
+}
 
 
 

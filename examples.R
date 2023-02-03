@@ -60,7 +60,7 @@ x <- "L+T<->Y"
 x <- "R+C<->E"
 check_comp_asf(x, y)
 
-y <- "(A+B<->C)*(C+D<->E)*(E+F<->G)*(G+H<->I)"
+x <- "(C+D<->E)*(A+B<->C)*(E+F<->G)*(G+H+C<->I)"
 x <- "(C+E<->G)*(G+F<->I)"
 check_ccomp(x,y)
 is.inus(x, selectCases(y))
@@ -74,3 +74,13 @@ target <- "(A + B*D <->C)*(C+D <->G)"
 candidate <- "(A + B*D <-> C)*(C <->G)"
 
 td <- selectCases(target)
+
+x <- "(A+B<->C)*(C+D<->E)*(E+F<->G)*(G+H+C<->I)"
+r <- "(E+F<->G)*(A+B<->C)*(C+D<->E)*(G+H+C<->I)"
+
+a <- substitute_all(x)
+b <- substitute_all(r)
+substitute_all(y)
+all.equal(substitute_all(x), substitute_all(r))
+
+substitute_all(x)
