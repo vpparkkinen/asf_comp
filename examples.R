@@ -28,7 +28,7 @@ y <- "(A*b+B*a+A*C<->D)*(D+E<->F)"
 x <- "A*b+B*a+B*C<->F"
 check_ccomp(x,y)
 y <- "(A+B*F<->C)*(D+B*f<->E)*(C+E<->G)"
-x <- "(A+B*F<->C)*(C+E<->G)"
+x <- "(A+B*F<->C)*(C*F+E<->G)"
 x <- "A+B*F+E<->G"
 check_ccomp(x,y)
 
@@ -70,8 +70,12 @@ x <- "(A + B <-> F)*(A + D <-> E)"
 check_ccomp(x,y)
 
 
-target <- "(A + B*D <->C)*(C+D <->G)"
-candidate <- "(A + B*D <-> C)*(C <->G)"
+y <- "(A + B*D <->C)*(C+D <->G)"
+x <- "(A + D <-> C)*(C <->G)"
+
+check_ccomp(x,y)
+substitute_all(x)
+csf2_substituter(x,y)
 
 td <- selectCases(target)
 

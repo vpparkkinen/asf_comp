@@ -153,12 +153,14 @@ substitute_all <- function(x){
   x <- decompose_model(x)
   subbed <- chain_substituter(x)
   lhss <- subbed$lhss
-  dnf_lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))
-  d <- data.frame(dnf_lhss, subbed$rhss)
-  new_asfs <- do.call("paste", c(d, sep = "<->"))
-  new_asfs <- paste0("(", new_asfs, ")")
-  new_csf <- paste0(new_asfs, collapse = "*")
-  return(new_csf)
+  #dnf_lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))
+  subbed$lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))
+  #d <- data.frame(dnf_lhss, subbed$rhss)
+  #new_asfs <- do.call("paste", c(d, sep = "<->"))
+  #new_asfs <- paste0("(", new_asfs, ")")
+  #new_csf <- paste0(new_asfs, collapse = "*")
+  #return(new_csf)
+  return(subbed)
 }
 
 
@@ -200,7 +202,29 @@ chain_substituter <- function(x,
 }
 
 
-
+csf2_substituter <- function(x, y){
+  x_expanded <- substitute_all(x)
+  x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
+                function(x) rreduce(getCond(selectCases(x)), 
+                                    selectCases(y), full = FALSE)))
+  x_expanded <- x_expanded[-1]
+  # new_asfs <- vector("character", length(x_expanded[[1]]))
+  # for(i in seq_along(x_expanded[[1]])){
+  #   new_asfs[i] <- paste0("(", 
+  #                         x_expanded$lhss[i], 
+  #                         "<->",
+  #                         x_expanded$rhss[i],
+  #                         ")")
+  #}
+  d <- data.frame(x_expanded$lhss, subbed$rhss)
+  new_asfs <- do.call("paste", c(d, sep = "<->"))
+  if(length(new_asfs) > 1){
+    new_asfs <- paste0("(", new_asfs, ")")
+  } 
+  new_csf <- paste0(new_asfs, collapse = "*")
+  out <- check_ccomp(new_csf, y)
+  return(out)
+} 
 
 
 
