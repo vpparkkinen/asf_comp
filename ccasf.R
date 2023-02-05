@@ -64,11 +64,11 @@ check_ccomp <- function(x,y){
      attr(out, "why") <- "x is asf and a submodel of y"
      return(out)
   }
-  if(is_x_csf & is_sm){
-    out[1] <- NA
-    attr(out, "why") <- "x is a csf and a submodel of y, requires further processing that I haven't coded yet"
-    return(out)
-  }
+  # if(is_x_csf & is_sm){
+  #   out[1] <- NA
+  #   attr(out, "why") <- "x is a csf and a submodel of y, requires further processing that I haven't coded yet"
+  #   return(out)
+  # }
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
@@ -204,9 +204,12 @@ chain_substituter <- function(x,
 
 csf2_substituter <- function(x, y){
   x_expanded <- substitute_all(x)
+  # x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
+  #               function(x) rreduce(getCond(selectCases(x)), 
+  #                                   selectCases(y), full = FALSE)))
+  
   x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
-                function(x) rreduce(getCond(selectCases(x)), 
-                                    selectCases(y), full = FALSE)))
+                                   function(x) rreduce(getCond(selectCases(x)))))
   x_expanded <- x_expanded[-1]
   # new_asfs <- vector("character", length(x_expanded[[1]]))
   # for(i in seq_along(x_expanded[[1]])){
@@ -216,7 +219,7 @@ csf2_substituter <- function(x, y){
   #                         x_expanded$rhss[i],
   #                         ")")
   #}
-  d <- data.frame(x_expanded$lhss, subbed$rhss)
+  d <- data.frame(x_expanded$lhss, x_expanded$rhss)
   new_asfs <- do.call("paste", c(d, sep = "<->"))
   if(length(new_asfs) > 1){
     new_asfs <- paste0("(", new_asfs, ")")

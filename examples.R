@@ -71,7 +71,7 @@ check_ccomp(x,y)
 
 
 y <- "(A + B*D <->C)*(C+D <->G)"
-x <- "(A + D <-> C)*(C <->G)"
+x <- "(A + B*D <-> C)*(C <->G)"
 
 check_ccomp(x,y)
 substitute_all(x)
@@ -85,8 +85,11 @@ r <- "(E+F<->G)*(A+B<->C)*(C+D<->E)*(G+H+C<->I)"
 y <- "(A+B<->C)*(C+D<->E)*(X+F<->G)*(G+H+c<->I)"
 x <- "(G+c<->I)*(C+D<->E)"
 
-y2 <- "(A+B<->C)*(C+D<->E)*(X+F<->G)*(G+c<->I)"
-
+y <- "(A+B<->C)*(C+D<->E)*(E+F<->G)*(G+H<->I)"
+x <- "(A+C<->E)*(E+H<->I)"
+x <- "A+C+H<->I"
+csf2_substituter(x,y)
+check_ccomp(x,y)
 yt2 <- substitute_all(y2)
 
 yt <- substitute_all(y)
