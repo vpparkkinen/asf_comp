@@ -202,7 +202,7 @@ chain_substituter <- function(x,
 }
 
 
-csf2_substituter <- function(x, y){
+is_compatible <- function(x, y){
   x_expanded <- substitute_all(x)
   # x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
   #               function(x) rreduce(getCond(selectCases(x)), 
@@ -226,6 +226,8 @@ csf2_substituter <- function(x, y){
   } 
   new_csf <- paste0(new_asfs, collapse = "*")
   out <- check_ccomp(new_csf, y)
+  attr(out, "og_y") <- y
+  attr(out, "og_x") <- x 
   return(out)
 } 
 

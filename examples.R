@@ -27,11 +27,13 @@ check_ccomp(x,y)
 y <- "(A*b+B*a+A*C<->D)*(D+E<->F)"
 x <- "A*b+B*a+B*C<->F"
 check_ccomp(x,y)
-y <- "(A+B*F<->C)*(D+B*f<->E)*(C+E<->G)"
-x <- "(A+B*F<->C)*(C*F+E<->G)"
-x <- "A+B*F+E<->G"
-check_ccomp(x,y)
 
+
+y <- "(A+B*F<->C)*(D+B*f<->E)*(C+E*T<->G)"
+x <- "(A+B*F<->C)*(D+B*f<->E)*(C+E<->G)"
+x <- "A+B*F+E<->G"
+check_ccomp(y,x)
+is_compatible(x,y)
 is.inus(x, selectCases(y))
 y <- "(D*F+a*b<->C)*(F*c<->G)*(B*f+D*c+a*c<->E)"
 x <-"D*f+d*B<->E"
@@ -70,12 +72,16 @@ x <- "(A + B <-> F)*(A + D <-> E)"
 check_ccomp(x,y)
 
 
-y <- "(A + B*D <->C)*(C+D <->G)"
+y <- "(A + B*D <->C)*(C+D<->G)"
 x <- "(A + B*D <-> C)*(C <->G)"
 
+
+
 check_ccomp(x,y)
-substitute_all(x)
-csf2_substituter(x,y)
+substitute_all(y)
+c <- getCond(selectCases(substitute_all(y)$lhss))
+rreduce(c, x=selectCases(noblanks(y)), full = FALSE)
+is_compatible(x,y)
 
 td <- selectCases(target)
 
@@ -86,9 +92,10 @@ y <- "(A+B<->C)*(C+D<->E)*(X+F<->G)*(G+H+c<->I)"
 x <- "(G+c<->I)*(C+D<->E)"
 
 y <- "(A+B<->C)*(C+D<->E)*(E+F<->G)*(G+H<->I)"
-x <- "(A+C<->E)*(E+H<->I)"
+x <- "(A+C<->C)*(C+D<->E)" #malformed model, infinite loop. fix
+x <- "(A+B<->C)*(C+D<->E)"
 x <- "A+C+H<->I"
-csf2_substituter(x,y)
+is_compatible(x,y)
 check_ccomp(x,y)
 yt2 <- substitute_all(y2)
 
