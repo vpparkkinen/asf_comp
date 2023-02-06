@@ -67,7 +67,7 @@ is_compatible <- function(x,y){
      return(out)
   }
    if(is_x_csf & is_sm){
-     out <- is_comp_subtar(x, y)
+     out <- is_comp_subtar(x, y, out = out)
      if(out[1]) {
        attr(out, "why") <- "x is a csf and a submodel of y, and x is causally compatible w/ y"
      } else {
@@ -75,6 +75,33 @@ is_compatible <- function(x,y){
      }
      return(out)
    }
+  # prepared <- ccheck_prep(x,y)
+  # prep_target <- prepared$target_lhss
+  # asf_subms <- is.submodel(prepared$candidate_asfs, y)
+  # subbed_tar_asfs <- vector("character", length(prepared$candidate_lhss[!asf_subms]))
+  # correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
+  # for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
+  #   subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
+  #                                        prepared$target_lhss,
+  #                                        prepared$no_sub)
+  #   correct[i] <- is.submodel(prepared$candidate_asfs[i], subbed_tar_asfs[i])
+  # }
+  # parts_correct <- c(correct, asf_subms[asf_subms])
+  # names(parts_correct) <- prepared$candidate_asfs
+  # out[1] <- all(parts_correct)
+  # if(out[1]){
+  #   attr(out, "why") <- "all x asfs are submodels of expanded y asfs"
+  # } else {
+  #   attr(out, "why") <- "some x asfs are not submodels of expanded y asfs"
+  # }
+  # attr(out, "ultimate_asfs") <- subbed_tar_asfs
+  # attr(out, "cand_asfs_checked") <- parts_correct
+  # return(out)
+  out <- subin_target_ccomp(x,y,out)
+  return(out)
+}
+
+subin_target_ccomp <- function(x, y, out){
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
@@ -96,8 +123,10 @@ is_compatible <- function(x,y){
   }
   attr(out, "ultimate_asfs") <- subbed_tar_asfs
   attr(out, "cand_asfs_checked") <- parts_correct
-  return(out)
+  return(out) 
 }
+
+
 
 
 lit_extract <- function(lhs){
@@ -208,7 +237,7 @@ chain_substituter <- function(x,
 }
 
 
-is_comp_subtar <- function(x, y){
+is_comp_subtar <- function(x, y, out){
   x_expanded <- substitute_all(x)
   # x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
   #               function(x) rreduce(getCond(selectCases(x)), 
@@ -231,7 +260,7 @@ is_comp_subtar <- function(x, y){
     new_asfs <- paste0("(", new_asfs, ")")
   } 
   new_csf <- paste0(new_asfs, collapse = "*")
-  out <- is_compatible(new_csf, y)
+  out <- subin_target_ccomp(new_csf, y, out = out)
   #attr(out, "og_y") <- y
   #attr(out, "og_x") <- x 
   return(out)
