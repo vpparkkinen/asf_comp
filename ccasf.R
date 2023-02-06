@@ -42,7 +42,7 @@ ccheck_prep <- function(x,y){
 }
 
 
-check_ccomp <- function(x,y){
+is_compatible <- function(x,y){
   x <- noblanks(x)
   y <- noblanks(y)
   out <- vector("logical", 1)
@@ -50,7 +50,9 @@ check_ccomp <- function(x,y){
                           x = x, 
                           y = y,
                           ultimate_asfs = NULL,
-                          cand_asfs_checked = NULL)
+                          cand_asfs_checked = NULL,
+                          og_y = y,
+                          og_x = x)
   if(!is.inus(x, selectCases(y))){
     out[1] <- FALSE
     attr(out, "why") <- "x is not inus wrt selectCases(y)"
@@ -64,11 +66,15 @@ check_ccomp <- function(x,y){
      attr(out, "why") <- "x is asf and a submodel of y"
      return(out)
   }
-  # if(is_x_csf & is_sm){
-  #   out[1] <- NA
-  #   attr(out, "why") <- "x is a csf and a submodel of y, requires further processing that I haven't coded yet"
-  #   return(out)
-  # }
+   if(is_x_csf & is_sm){
+     out <- is_comp_subtar(x, y)
+     if(out[1]) {
+       attr(out, "why") <- "x is a csf and a submodel of y, and x is causally compatible w/ y"
+     } else {
+       attr(out, "why") <- "x is a csf and a submodel of y, but x is not causally compatible w/ y"
+     }
+     return(out)
+   }
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
@@ -202,7 +208,7 @@ chain_substituter <- function(x,
 }
 
 
-is_compatible <- function(x, y){
+is_comp_subtar <- function(x, y){
   x_expanded <- substitute_all(x)
   # x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
   #               function(x) rreduce(getCond(selectCases(x)), 
@@ -225,9 +231,9 @@ is_compatible <- function(x, y){
     new_asfs <- paste0("(", new_asfs, ")")
   } 
   new_csf <- paste0(new_asfs, collapse = "*")
-  out <- check_ccomp(new_csf, y)
-  attr(out, "og_y") <- y
-  attr(out, "og_x") <- x 
+  out <- is_compatible(new_csf, y)
+  #attr(out, "og_y") <- y
+  #attr(out, "og_x") <- x 
   return(out)
 } 
 
