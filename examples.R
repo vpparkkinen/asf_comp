@@ -123,3 +123,6 @@ x <- "(f*E<->A)*(C<->E)" # drop rreduce for ultimate lhs for A in check_ccomp_as
 y <- "(C*D+C*F+C*b<->E)*(B*D*E+C*b*f<->A)" #because nothing in y can be substituted 
 is_compatible(x,y)
 
+x <- "(A*c*g*E<->B)*(A*c*g+A*g*e<->D)" #candidate, should be false?
+b <- "(D*E<->B)*(A*c*g+A*e*g<->D)" # target
+is_compatible(x,b)

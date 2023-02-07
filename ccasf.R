@@ -31,7 +31,8 @@ ccheck_prep <- function(x,y){
   cand_lhss <- cand_decomp$lhss
   names(cand_lhss) <- cand_outs
   cand_facs <- lit_extract(cand_lhss)
-  not_subbable <- toupper(tar_outs) %in% toupper(cand_facs)
+  #not_subbable <- toupper(tar_outs) %in% toupper(cand_facs)
+  not_subbable <- toupper(tar_outs) %in% c(toupper(cand_facs), toupper(cand_outs))
   test_tar_lhss <- tar_lhss
   names(test_tar_lhss) <- tar_outs
   out <- list(target_lhss = test_tar_lhss, 
