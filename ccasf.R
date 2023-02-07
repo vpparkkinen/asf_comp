@@ -12,7 +12,7 @@ decompose_model <- function(x){
   asfs <- unlist(extract_asf(x))
   rhss <- rhs(asfs)
   lhss <- lhs(asfs)
-  lhs_lits <- lit_extract(lhss)
+  #lhs_lits <- lit_extract(lhss)
   out <- list(asfs = asfs, 
               rhss = rhss, 
               lhss = lhss)
@@ -67,13 +67,15 @@ is_compatible <- function(x,y){
      return(out)
   }
    if(is_x_csf & is_sm){
-     out <- is_comp_subtar(x, y, out = out)
-     if(out[1]) {
-       attr(out, "why") <- "x is a csf and a submodel of y, and x is causally compatible w/ y"
-     } else {
-       attr(out, "why") <- "x is a csf and a submodel of y, but x is not causally compatible w/ y"
-     }
-     return(out)
+     x <- is_comp_subtar(x)
+     #out <- is_comp_subtar(x, y, out = out)
+     # if(out[1]) {
+     #   attr(out, "why") <- "x is a csf and a submodel of y, and x is causally compatible w/ y"
+     # } else {
+     #   attr(out, "why") <- "x is a csf and a submodel of y, but x is not causally compatible w/ y"
+     # }
+     attr(out, "why") <- "x is a csf and a submodel of y, substitute in x before checking compatibility"
+     #return(out)
    }
   # prepared <- ccheck_prep(x,y)
   # prep_target <- prepared$target_lhss
@@ -144,7 +146,7 @@ check_comp_asf <- function(x, y, not_subbable){
   outc_matches <- tar_outs %in% cand_out
   outcome_match <- which(tar_outs %in% cand_out)
   
-  ultimate_lhs <- y[outcome_match]
+  ultimate_lhs <- ultimate_lhs1 <- y[outcome_match]
   idx_sub_from <- vector("logical", length(tar_outs))
   
   while(any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
@@ -177,8 +179,14 @@ check_comp_asf <- function(x, y, not_subbable){
   ogy <- paste0(tar_lhss, "<->", names(tar_lhss)) #stupid hack must go
   ogy <- paste0("(", ogy, ")")
   ogy <- paste0(ogy, collapse = "*")
-  subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), 
-                        selectCases(ogy), full = FALSE)
+  if(identical(ultimate_lhs, ultimate_lhs1)){
+    subbed_lhs <- ultimate_lhs1
+  } else {
+    subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), 
+                          selectCases(ogy), full = FALSE)  
+  }
+  # subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), #drop this if ultimate_lhs
+  #                       selectCases(ogy), full = FALSE) # is identical to og ultimate_lhs
   out <- paste0(subbed_lhs, "<->", tar_outs[outcome_match])
   return(out)
 }
@@ -236,8 +244,9 @@ chain_substituter <- function(x,
   chain_substituter(x, subbed_from = subbed_from)
 }
 
-
-is_comp_subtar <- function(x, y, out){
+# this one for the case where x is csf and submodel of y
+# is_comp_subtar <- function(x, y, out){
+is_comp_subtar <- function(x, y, out){  
   x_expanded <- substitute_all(x)
   # x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
   #               function(x) rreduce(getCond(selectCases(x)), 
@@ -260,10 +269,10 @@ is_comp_subtar <- function(x, y, out){
     new_asfs <- paste0("(", new_asfs, ")")
   } 
   new_csf <- paste0(new_asfs, collapse = "*")
-  out <- subin_target_ccomp(new_csf, y, out = out)
+  #out <- subin_target_ccomp(new_csf, y, out = out)
   #attr(out, "og_y") <- y
   #attr(out, "og_x") <- x 
-  return(out)
+  return(new_csf)
 } 
 
 

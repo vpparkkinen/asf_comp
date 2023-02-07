@@ -46,7 +46,7 @@ check_comp_asf(x,y)
 
 y <- "(E*c*d+a*c+a*d*g<->F)*(A*F+D*E*g+a*d*f<->B)"
 x <- "A*F+a*d*G+E*D*g<->B"
-check_comp_asf(x,y)
+is_compatible(x,y)
 
 
 ### is_compatible()
@@ -62,7 +62,7 @@ x <- "L+T<->Y"
 x <- "R+C<->E"
 check_comp_asf(x, y)
 
-x <- "(C+D<->E)*(A+B<->C)*(E+F<->G)*(G+H+C<->I)"
+y <- "(C+D<->E)*(A+B<->C)*(E+F<->G)*(G+H+C<->I)"
 x <- "(C+E<->G)*(G+F<->I)"
 is_compatible(x,y)
 is.inus(x, selectCases(y))
@@ -70,7 +70,7 @@ is.inus(x, selectCases(y))
 y <- "(A + B <-> C)*(C + Z <-> F)*(C + D <-> E)"
 x <- "(A + B <-> F)*(A + D <-> E)"
 is_compatible(x,y)
-i
+
 
 y <- "(A + B*D <->C)*(C+D<->G)"
 x <- "(A + B*D <-> C)*(C <->G)"
@@ -113,5 +113,13 @@ is.submodel(y,a)
 y <- "(B*D*F*G+B*F*d*g+b*f*g<->A)*(A*D+G*b*d+G*f<->E)"
 x <- "(b*f*g+D*F*E<->A)*(G<->E)" #should be false
 is.submodel(x,y)
+is_compatible(x,y)
+
+GT <- "(B*D*F*G+B*F*d*g+b*f*g<->A)*(A*D+G*b*d+G*f<->E)"
+x <- "(b*f*g+D*F*G<->A)*(G<->E)"
+is_compatible(x,GT)
+
+x <- "(f*E<->A)*(C<->E)" # drop rreduce for ultimate lhs for A in check_ccomp_asf
+y <- "(C*D+C*F+C*b<->E)*(B*D*E+C*b*f<->A)" #because nothing in y can be substituted 
 is_compatible(x,y)
 
