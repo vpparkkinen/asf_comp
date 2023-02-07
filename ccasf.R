@@ -114,9 +114,10 @@ subin_target_ccomp <- function(x, y, out){
     subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
                                          prepared$target_lhss,
                                          prepared$no_sub)
-    correct[i] <- is.submodel(prepared$candidate_asfs[i], subbed_tar_asfs[i])
+    correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
+                              subbed_tar_asfs[i])
   }
-  parts_correct <- c(correct, asf_subms[asf_subms])
+  parts_correct <- c(asf_subms[asf_subms], correct)
   names(parts_correct) <- prepared$candidate_asfs
   out[1] <- all(parts_correct)
   if(out[1]){

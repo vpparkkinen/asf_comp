@@ -42,7 +42,7 @@ is_compatible(x,y)
 y <- "(C*e*f+E*F*c+F*c*g<->B)*(B*e+E*G*c<->D)*(F*G+d*e<->A)"
 
 x <- "e*b+F*G<->A"
-check_comp_asf(x,y)
+is_compatible(x,y)
 
 y <- "(E*c*d+a*c+a*d*g<->F)*(A*F+D*E*g+a*d*f<->B)"
 x <- "A*F+a*d*G+E*D*g<->B"
@@ -60,7 +60,7 @@ is_compatible(x,y)
 
 x <- "L+T<->Y"
 x <- "R+C<->E"
-check_comp_asf(x, y)
+is_compatible(x, y)
 
 y <- "(C+D<->E)*(A+B<->C)*(E+F<->G)*(G+H+C<->I)"
 x <- "(C+E<->G)*(G+F<->I)"
@@ -126,3 +126,8 @@ is_compatible(x,y)
 x <- "(A*c*g*E<->B)*(A*c*g+A*g*e<->D)" #candidate, should be false?
 b <- "(D*E<->B)*(A*c*g+A*e*g<->D)" # target
 is_compatible(x,b)
+
+x <- "(g*b<->A)*(G*B<->E)*(b+D*e<->F)" 
+y <- "(C*d*g+b*g<->A)*(B*G<->E)*(C*E*d+D*e+b*g<->F)"
+
+is_compatible(x,y)
