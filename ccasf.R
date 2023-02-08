@@ -119,7 +119,7 @@ subin_target_ccomp <- function(x, y, out){
     #                           subbed_tar_asfs[i])
     asf_cor <- is.submodel(prepared$candidate_asfs[!asf_subms][i],
                            subbed_tar_asfs[i])
-    correct[names(correct) == names(prepared$candidate_asfs[i])] <- asf_cor
+    correct[names(correct) == prepared$candidate_asfs[i]] <- asf_cor
   }
   attr(correct, "target") <- NULL
   #parts_correct <- c(asf_subms[asf_subms], correct)
