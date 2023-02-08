@@ -108,18 +108,33 @@ subin_target_ccomp <- function(x, y, out){
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
-  subbed_tar_asfs <- vector("character", length(prepared$candidate_lhss[!asf_subms]))
+  cand_need_checking <- prepared$candidate_lhss[!asf_subms]
+  subbed_tar_asfs <- vector("character", length(prepared$target_lhss))
+  # sapply(names(prepared$target_lhss), 
+  #        function(x) x %in% names(prepared$candidate_lhss))
+  # #which_to_sub <- 
   #correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
   correct <- asf_subms
-  for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
-    subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
+  # for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
+  #   subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
+  #                                        prepared$target_lhss,
+  #                                        prepared$no_sub)
+  #   # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
+  #   #                           subbed_tar_asfs[i])
+  #   asf_cor <- is.submodel(prepared$candidate_asfs[!asf_subms][i],
+  #                          subbed_tar_asfs[i])
+  #   correct[names(correct) == prepared$candidate_asfs[!asf_subms][i][i]] <- asf_cor
+  # }
+  for(i in seq_along(cand_need_checking)){
+    subbed_tar_asfs[i] <- check_comp_asf(cand_need_checking[i], 
                                          prepared$target_lhss,
                                          prepared$no_sub)
     # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
     #                           subbed_tar_asfs[i])
-    asf_cor <- is.submodel(prepared$candidate_asfs[!asf_subms][i],
+    idx <- which(names(prepared$candidate_lhss) == names(cand_need_checking[i]))
+    asf_cor <- is.submodel(prepared$candidate_asfs[idx],
                            subbed_tar_asfs[i])
-    correct[names(correct) == prepared$candidate_asfs[i]] <- asf_cor
+    correct[names(correct) == prepared$candidate_asfs[idx]] <- asf_cor
   }
   attr(correct, "target") <- NULL
   #parts_correct <- c(asf_subms[asf_subms], correct)

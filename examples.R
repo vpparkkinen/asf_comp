@@ -137,4 +137,7 @@ y <- "(E*f+F*c*d<->B)*(B*F+D*b*c<->A)*(a*c*d<->G)"
 is_compatible(x,y)
 
 
+x <- "(G+F*d<->A)*(F*D*G<->B)*(f*a<->C)*(g*A<->E)"
+y <- "(F*d+D*G<->A)*(a*f<->C)*(D*F*G<->B)*(g*A<->E)"
+is_compatible(x,y)
 
