@@ -109,24 +109,31 @@ subin_target_ccomp <- function(x, y, out){
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
   subbed_tar_asfs <- vector("character", length(prepared$candidate_lhss[!asf_subms]))
-  correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
+  #correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
+  correct <- asf_subms
   for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
     subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
                                          prepared$target_lhss,
                                          prepared$no_sub)
-    correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
-                              subbed_tar_asfs[i])
+    # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
+    #                           subbed_tar_asfs[i])
+    asf_cor <- is.submodel(prepared$candidate_asfs[!asf_subms][i],
+                           subbed_tar_asfs[i])
+    correct[names(correct) == names(prepared$candidate_asfs[i])] <- asf_cor
   }
-  parts_correct <- c(asf_subms[asf_subms], correct)
-  names(parts_correct) <- prepared$candidate_asfs
-  out[1] <- all(parts_correct)
+  attributes(correct) <- NULL
+  #parts_correct <- c(asf_subms[asf_subms], correct)
+  #names(parts_correct) <- prepared$candidate_asfs
+  
+  #out[1] <- all(parts_correct)
+  out[1] <- all(correct)
   if(out[1]){
     attr(out, "why") <- "all x asfs are submodels of expanded y asfs"
   } else {
     attr(out, "why") <- "some x asfs are not submodels of expanded y asfs"
   }
-  attr(out, "ultimate_asfs") <- subbed_tar_asfs
-  attr(out, "cand_asfs_checked") <- parts_correct
+  attr(out, "expanded_tar_asfs") <- subbed_tar_asfs
+  attr(out, "cand_asfs_checked") <- correct
   return(out) 
 }
 

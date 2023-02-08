@@ -131,3 +131,10 @@ x <- "(g*b<->A)*(G*B<->E)*(b+D*e<->F)"
 y <- "(C*d*g+b*g<->A)*(B*G<->E)*(C*E*d+D*e+b*g<->F)"
 
 is_compatible(x,y)
+
+x <- "(F*c<->A)*(E*f+c*d<->B)*(c*d*a<->G)" # should be false bc F*c<->A
+y <- "(E*f+F*c*d<->B)*(B*F+D*b*c<->A)*(a*c*d<->G)"
+is_compatible(x,y)
+
+
+
