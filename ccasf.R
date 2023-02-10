@@ -1,5 +1,5 @@
 library(cna)
-
+library(stringr)
 
 case_flipper <- function(x){
   out <- ifelse(x == toupper(x), tolower(x), toupper(x))
@@ -157,7 +157,13 @@ subin_target_ccomp <- function(x, y, out){
 }
 
 
-
+mvdatgen <- function(x){
+  fct <- full.ct(x)
+  fct_max <- apply(fct, 2, max)
+  mv_values <- lapply(fct_max, function(x) `:`(0L, x))
+  out <- full.ct(cond = x, x = mv_values)
+  return(out)
+}
 
 lit_extract <- function(lhs){
   d <- unlist(strsplit(lhs, "\\+"))
@@ -166,7 +172,14 @@ lit_extract <- function(lhs){
 }
 
 
-check_comp_asf <- function(x, y, not_subbable, ogy){
+is_mv <- function(x){
+  grepl("=", x)
+}
+
+check_comp_asf <- function(x, y, not_subbable, ogy, dat = full.ct(ogy)){
+  if(grepl("=", ogy)){
+    dat <- mvdatgen(ogy)
+  }
   tar_lhss <- y
   tar_outs <- names(y)
   tar_outs_flipped <- sapply(tar_outs, case_flipper)
@@ -215,8 +228,10 @@ check_comp_asf <- function(x, y, not_subbable, ogy){
   if(identical(ultimate_lhs, ultimate_lhs1)){
     subbed_lhs <- ultimate_lhs1
   } else {
-    subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), 
-                          selectCases(ogy), full = FALSE)  
+    u_lhsdat <- selectCases(cond = ultimate_lhs,
+                            x = dat)
+    cond <- getCond(u_lhsdat)
+    subbed_lhs <- rreduce(cond, selectCases(ogy, x = dat), full = FALSE)  
   }
   # subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), #drop this if ultimate_lhs
   #                       selectCases(ogy), full = FALSE) # is identical to og ultimate_lhs
