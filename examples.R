@@ -141,3 +141,13 @@ x <- "(G+F*d<->A)*(F*D*G<->B)*(f*a<->C)*(g*A<->E)"
 y <- "(F*d+D*G<->A)*(a*f<->C)*(D*F*G<->B)*(g*A<->E)"
 is_compatible(x,y)
 
+y <- "(A+B<->C)*(X+Y<->T)"
+x <- "(A+B<->C)*(T<->Y)"
+is_compatible(x,y)
+
+#mv
+
+
+y <- "(A=1+B=2<->C=3)*(C=3+D=5<->E=6)"
+x <- "(A=1+B=2<->E=6)"
+is_compatible(x,y)

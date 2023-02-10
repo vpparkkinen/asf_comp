@@ -35,7 +35,10 @@ ccheck_prep <- function(x,y){
   not_subbable <- toupper(tar_outs) %in% c(toupper(cand_facs), toupper(cand_outs))
   test_tar_lhss <- tar_lhss
   names(test_tar_lhss) <- tar_outs
-  out <- list(target_lhss = test_tar_lhss, 
+  out <- list(target = y,
+              target_lhss = test_tar_lhss,
+              target_asfs = tar_asfs,
+              candidate = x,
               candidate_lhss = cand_lhss,
               candidate_asfs = cand_asfs,
               no_sub = not_subbable)
@@ -54,11 +57,11 @@ is_compatible <- function(x,y){
                           cand_asfs_checked = NULL,
                           og_y = y,
                           og_x = x)
-  if(!is.inus(x, selectCases(y))){
-    out[1] <- FALSE
-    attr(out, "why") <- "x is not inus wrt selectCases(y)"
-    return(out)
-  }
+  # if(!is.inus(x, selectCases(y))){
+  #   out[1] <- FALSE
+  #   attr(out, "why") <- "x is not inus wrt selectCases(y)"
+  #   return(out)
+  # }
   is_sm <- is.submodel(x,y)
   c_asfcount <- unlist(strsplit(x, "<->"))
   is_x_csf <- length(c_asfcount) > 2
@@ -128,7 +131,8 @@ subin_target_ccomp <- function(x, y, out){
   for(i in seq_along(cand_need_checking)){
     subbed_tar_asfs[i] <- check_comp_asf(cand_need_checking[i], 
                                          prepared$target_lhss,
-                                         prepared$no_sub)
+                                         prepared$no_sub,
+                                         y)
     # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
     #                           subbed_tar_asfs[i])
     idx <- which(names(prepared$candidate_lhss) == names(cand_need_checking[i]))
@@ -162,19 +166,24 @@ lit_extract <- function(lhs){
 }
 
 
-check_comp_asf <- function(x, y, not_subbable){
+check_comp_asf <- function(x, y, not_subbable, ogy){
   tar_lhss <- y
   tar_outs <- names(y)
   tar_outs_flipped <- sapply(tar_outs, case_flipper)
   cand_out <- names(x)
   outc_matches <- tar_outs %in% cand_out
-  outcome_match <- which(tar_outs %in% cand_out)
+  if(!any(outc_matches)){
+    return(ogy)
+  }
+  outcome_match <- which(outc_matches)
   
   ultimate_lhs <- ultimate_lhs1 <- y[outcome_match]
   idx_sub_from <- vector("logical", length(tar_outs))
   
-  while(any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
-                                                     "")))){
+  # while(any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
+  #                                                    "")))){
+  while(any(sapply(toupper(tar_outs[!not_subbable]), 
+            function(x) grepl(x, toupper(ultimate_lhs))))){
     sub_from_capmatch <- sapply(tar_outs, 
                                 function(y) 
                                   grepl(y, ultimate_lhs))
@@ -200,9 +209,9 @@ check_comp_asf <- function(x, y, not_subbable){
       }  
     }
   }
-  ogy <- paste0(tar_lhss, "<->", names(tar_lhss)) #stupid hack must go
-  ogy <- paste0("(", ogy, ")")
-  ogy <- paste0(ogy, collapse = "*")
+  #ogy <- paste0(tar_lhss, "<->", names(tar_lhss)) #stupid hack must go
+  #ogy <- paste0("(", ogy, ")")
+  #ogy <- paste0(ogy, collapse = "*")
   if(identical(ultimate_lhs, ultimate_lhs1)){
     subbed_lhs <- ultimate_lhs1
   } else {
