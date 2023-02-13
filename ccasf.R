@@ -1,7 +1,7 @@
 library(cna)
 library(stringr)
 
-case_flipper <- function(x){
+case_flipper <- function(x){ #fix for mv
   out <- ifelse(x == toupper(x), tolower(x), toupper(x))
   return(out)
 }
@@ -46,7 +46,7 @@ ccheck_prep <- function(x,y){
 }
 
 
-is_compatible <- function(x,y){
+is_compatible <- function(x, y, dat = NULL){
   x <- noblanks(x)
   y <- noblanks(y)
   out <- vector("logical", 1)
@@ -57,6 +57,19 @@ is_compatible <- function(x,y){
                           cand_asfs_checked = NULL,
                           og_y = y,
                           og_x = x)
+  if(grepl("=", y)){
+    if(!grepl("=", x)){stop("x and y must be same type of model")}
+    type <- "mv"
+  } else {
+    type <- "bin"
+  }
+  if(is.null(dat) & type == "mv"){
+    stop("A data frame, configTable, or a list specifying admissible \n
+         factor values must be provided for multi-valued models")
+  }
+  if(!is.null(dat) & type == "bin") {dat <- full.ct(ogy)}
+  if(!is.null(dat) & type == "mv") {dat <- full.ct(dat)}
+  
   # if(!is.inus(x, selectCases(y))){
   #   out[1] <- FALSE
   #   attr(out, "why") <- "x is not inus wrt selectCases(y)"
@@ -103,11 +116,11 @@ is_compatible <- function(x,y){
   # attr(out, "ultimate_asfs") <- subbed_tar_asfs
   # attr(out, "cand_asfs_checked") <- parts_correct
   # return(out)
-  out <- subin_target_ccomp(x,y,out)
+  out <- subin_target_ccomp(x , y , out, dat, type)
   return(out)
 }
 
-subin_target_ccomp <- function(x, y, out){
+subin_target_ccomp <- function(x, y, out, dat = NULL, type){
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
@@ -132,7 +145,9 @@ subin_target_ccomp <- function(x, y, out){
     subbed_tar_asfs[i] <- check_comp_asf(cand_need_checking[i], 
                                          prepared$target_lhss,
                                          prepared$no_sub,
-                                         y)
+                                         y,
+                                         dat = dat,
+                                         type = type)
     # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
     #                           subbed_tar_asfs[i])
     idx <- which(names(prepared$candidate_lhss) == names(cand_need_checking[i]))
@@ -157,32 +172,21 @@ subin_target_ccomp <- function(x, y, out){
 }
 
 
-mvdatgen <- function(x){
-  fct <- full.ct(x)
-  fct_max <- apply(fct, 2, max)
-  mv_values <- lapply(fct_max, function(x) `:`(0L, x))
-  out <- full.ct(cond = x, x = mv_values)
-  return(out)
-}
-
-lit_extract <- function(lhs){
-  d <- unlist(strsplit(lhs, "\\+"))
-  out <- unlist(strsplit(d, "\\*"))
-  return(out)
-}
-
-
-is_mv <- function(x){
-  grepl("=", x)
-}
-
-check_comp_asf <- function(x, y, not_subbable, ogy, dat = full.ct(ogy)){
-  if(grepl("=", ogy)){
-    dat <- mvdatgen(ogy)
-  }
+check_comp_asf <- function(x, y, not_subbable, ogy, dat = NULL, type){
+  # if(grepl("=", ogy)){
+  #   type <- "mv"
+  # } else {
+  #   type <- "bin"
+  # }
+  # if(is.null(dat) & type == "mv"){
+  #   stop("A data frame, configTable, or a list specifying admissible \n
+  #        factor values must be provided for multi-valued models")
+  # }
+  # if(!is.null(dat) & type == "bin") {dat <- full.ct(ogy)}
+  # if(!is.null(dat) & type == "mv") {dat <- full.ct(dat)}
   tar_lhss <- y
   tar_outs <- names(y)
-  tar_outs_flipped <- sapply(tar_outs, case_flipper)
+  tar_outs_flipped <- sapply(tar_outs, case_flipper) #fix for mv
   cand_out <- names(x)
   outc_matches <- tar_outs %in% cand_out
   if(!any(outc_matches)){
@@ -228,10 +232,19 @@ check_comp_asf <- function(x, y, not_subbable, ogy, dat = full.ct(ogy)){
   if(identical(ultimate_lhs, ultimate_lhs1)){
     subbed_lhs <- ultimate_lhs1
   } else {
-    u_lhsdat <- selectCases(cond = ultimate_lhs,
-                            x = dat)
-    cond <- getCond(u_lhsdat)
-    subbed_lhs <- rreduce(cond, selectCases(ogy, x = dat), full = FALSE)  
+    if(type == "mv"){
+      fnames <- sapply(names(dat), 
+                       function(x) stringr::str_extract_all(ultimate_lhs, x)) #WILL NOT WORK
+      # posit_fnames <- sapply(names(dat), 
+      #                  function(x) stringr::str_locate_all(ultimate_lhs, x))
+      fnames <- sapply(fnames, unique)
+      fnames <- unlist(fnames)
+      u_lhsdat <- selectCases(cond = ultimate_lhs,
+                              x = dat[,fnames])
+      cond <- getCond(u_lhsdat)
+      subbed_lhs <- rreduce(cond = cond, x = selectCases(ogy, x = dat), full = FALSE) 
+    }
+     
   }
   # subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), #drop this if ultimate_lhs
   #                       selectCases(ogy), full = FALSE) # is identical to og ultimate_lhs
@@ -324,7 +337,29 @@ is_comp_subtar <- function(x, y, out){
 } 
 
 
+mvdatgen <- function(x){
+  fct <- full.ct(x)
+  fct_u <- apply(fct, 2, unique)
+  
+  #mv_values <- lapply(fct_max, function(x) `:`(0L, x))
+  mv_values <- lapply(fct_u, 
+                      function(x) {if(length(unique(x)) < 3){
+                        x <- x:(x+2)
+                      } else {
+                        x <- x
+                      }
+                        return(x)})
+  
+  #out <- full.ct(cond = x, x = mv_values)
+  out <- full.ct(x = mv_values)
+  return(out)
+}
 
+lit_extract <- function(lhs){
+  d <- unlist(strsplit(lhs, "\\+"))
+  out <- unlist(strsplit(d, "\\*"))
+  return(out)
+}
 
 
 
