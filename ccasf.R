@@ -233,10 +233,14 @@ check_comp_asf <- function(x, y, not_subbable, ogy, dat = NULL, type){
     subbed_lhs <- ultimate_lhs1
   } else {
     if(type == "mv"){
-      fnames <- sapply(names(dat), 
-                       function(x) stringr::str_extract_all(ultimate_lhs, x)) #WILL NOT WORK
+      # fnames <- sapply(names(dat), 
+      #                  function(x) stringr::str_extract_all(ultimate_lhs, x)) #WILL NOT WORK
       # posit_fnames <- sapply(names(dat), 
       #                  function(x) stringr::str_locate_all(ultimate_lhs, x))
+      #this regex: "(?=)\\d|(?<=\\=).|\\(|\\)|\\*|\\+|\\=", perl = T
+      fnames <- unlist(strsplit(ultimate_lhs, 
+                                "(?=)\\d|(?<=\\=).|\\(|\\)|\\*|\\+|\\=",
+                                perl = TRUE))
       fnames <- sapply(fnames, unique)
       fnames <- unlist(fnames)
       u_lhsdat <- selectCases(cond = ultimate_lhs,
