@@ -130,7 +130,8 @@ extr_mv_facs <- function(x){
   fnames <- unlist(strsplit(x, 
                             "\\(|\\)|\\+|\\*|\\="))
   fnames <- fnames[sapply(fnames, function(x) grepl("\\D", x))]
-  return(fnames)
+  out <- unique(fnames)
+  return(out)
 }
 
 
