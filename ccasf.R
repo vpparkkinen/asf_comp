@@ -67,14 +67,14 @@ is_compatible <- function(x, y, dat = NULL){
     stop("A data frame, configTable, or a list specifying admissible \n
          factor values must be provided for multi-valued models")
   }
-  if(!is.null(dat) & type == "bin") {dat <- full.ct(ogy)}
-  if(!is.null(dat) & type == "mv") {dat <- full.ct(dat)}
+  if(type == "bin") {dat <- full.ct(y)}
+  if(type == "mv") {dat <- full.ct(dat)}
   
-  # if(!is.inus(x, selectCases(y, x = dat))){
-  #   out[1] <- FALSE
-  #   attr(out, "why") <- "x is not inus wrt selectCases(y)"
-  #   return(out)
-  #}
+  if(!is.inus(x, selectCases(y, x = dat))){
+    out[1] <- FALSE
+    attr(out, "why") <- "x is not inus wrt selectCases(y)"
+    return(out)
+  }
   is_sm <- is.submodel(x,y)
   c_asfcount <- unlist(strsplit(x, "<->"))
   is_x_csf <- length(c_asfcount) > 2
