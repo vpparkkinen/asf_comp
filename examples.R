@@ -148,6 +148,7 @@ is_compatible(x,y)
 #mv
 
 
-y <- "(A=1+B=2<->C=3)*(C=3+D=5<->E=6)"
-x <- "(A=1+B=2<->E=6)"
-is_compatible(x,y)
+y <- "(A=1+B=2<->C=3)*(C=3+D=5<->E=2)*(E=2+R=5<->X=3)*(G=2+Y=3*J=1<->Z=1)"
+dat <- mvdatgen(y)
+x <- "(A=1+B=2<->E=2)*(G=2+Y=3*J=1<->Z=1)"
+is_compatible(x,y, dat = dat)

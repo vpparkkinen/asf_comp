@@ -70,11 +70,11 @@ is_compatible <- function(x, y, dat = NULL){
   if(!is.null(dat) & type == "bin") {dat <- full.ct(ogy)}
   if(!is.null(dat) & type == "mv") {dat <- full.ct(dat)}
   
-  # if(!is.inus(x, selectCases(y))){
-  #   out[1] <- FALSE
-  #   attr(out, "why") <- "x is not inus wrt selectCases(y)"
-  #   return(out)
-  # }
+  if(!is.inus(x, selectCases(y, x = dat))){
+    out[1] <- FALSE
+    attr(out, "why") <- "x is not inus wrt selectCases(y)"
+    return(out)
+  }
   is_sm <- is.submodel(x,y)
   c_asfcount <- unlist(strsplit(x, "<->"))
   is_x_csf <- length(c_asfcount) > 2
@@ -84,38 +84,9 @@ is_compatible <- function(x, y, dat = NULL){
      return(out)
   }
    if(is_x_csf & is_sm){
-     x <- is_comp_subtar(x)
-     #out <- is_comp_subtar(x, y, out = out)
-     # if(out[1]) {
-     #   attr(out, "why") <- "x is a csf and a submodel of y, and x is causally compatible w/ y"
-     # } else {
-     #   attr(out, "why") <- "x is a csf and a submodel of y, but x is not causally compatible w/ y"
-     # }
+     x <- is_comp_subtar(x, dat = dat, type = type)
      attr(out, "why") <- "x is a csf and a submodel of y, substitute in x before checking compatibility"
-     #return(out)
    }
-  # prepared <- ccheck_prep(x,y)
-  # prep_target <- prepared$target_lhss
-  # asf_subms <- is.submodel(prepared$candidate_asfs, y)
-  # subbed_tar_asfs <- vector("character", length(prepared$candidate_lhss[!asf_subms]))
-  # correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
-  # for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
-  #   subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
-  #                                        prepared$target_lhss,
-  #                                        prepared$no_sub)
-  #   correct[i] <- is.submodel(prepared$candidate_asfs[i], subbed_tar_asfs[i])
-  # }
-  # parts_correct <- c(correct, asf_subms[asf_subms])
-  # names(parts_correct) <- prepared$candidate_asfs
-  # out[1] <- all(parts_correct)
-  # if(out[1]){
-  #   attr(out, "why") <- "all x asfs are submodels of expanded y asfs"
-  # } else {
-  #   attr(out, "why") <- "some x asfs are not submodels of expanded y asfs"
-  # }
-  # attr(out, "ultimate_asfs") <- subbed_tar_asfs
-  # attr(out, "cand_asfs_checked") <- parts_correct
-  # return(out)
   out <- subin_target_ccomp(x , y , out, dat, type)
   return(out)
 }
@@ -126,21 +97,8 @@ subin_target_ccomp <- function(x, y, out, dat = NULL, type){
   asf_subms <- is.submodel(prepared$candidate_asfs, y)
   cand_need_checking <- prepared$candidate_lhss[!asf_subms]
   subbed_tar_asfs <- vector("character", length(prepared$target_lhss))
-  # sapply(names(prepared$target_lhss), 
-  #        function(x) x %in% names(prepared$candidate_lhss))
-  # #which_to_sub <- 
-  #correct <- vector("logical", length(prepared$candidate_lhss[!asf_subms]))
   correct <- asf_subms
-  # for(i in seq_along(prepared$candidate_lhss[!asf_subms])){
-  #   subbed_tar_asfs[i] <- check_comp_asf(prepared$candidate_lhss[!asf_subms][i], 
-  #                                        prepared$target_lhss,
-  #                                        prepared$no_sub)
-  #   # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
-  #   #                           subbed_tar_asfs[i])
-  #   asf_cor <- is.submodel(prepared$candidate_asfs[!asf_subms][i],
-  #                          subbed_tar_asfs[i])
-  #   correct[names(correct) == prepared$candidate_asfs[!asf_subms][i][i]] <- asf_cor
-  # }
+
   for(i in seq_along(cand_need_checking)){
     subbed_tar_asfs[i] <- check_comp_asf(cand_need_checking[i], 
                                          prepared$target_lhss,
@@ -156,10 +114,7 @@ subin_target_ccomp <- function(x, y, out, dat = NULL, type){
     correct[names(correct) == prepared$candidate_asfs[idx]] <- asf_cor
   }
   attr(correct, "target") <- NULL
-  #parts_correct <- c(asf_subms[asf_subms], correct)
-  #names(parts_correct) <- prepared$candidate_asfs
-  
-  #out[1] <- all(parts_correct)
+
   out[1] <- all(correct)
   if(out[1]){
     attr(out, "why") <- "all x asfs are submodels of expanded y asfs"
@@ -171,19 +126,18 @@ subin_target_ccomp <- function(x, y, out, dat = NULL, type){
   return(out) 
 }
 
+extr_mv_facs <- function(x){
+  fnames <- unlist(strsplit(x, 
+                            "\\(|\\)|\\+|\\*|\\="))
+  fnames <- fnames[sapply(fnames, function(x) grepl("\\D", x))]
+  return(fnames)
+}
+
 
 check_comp_asf <- function(x, y, not_subbable, ogy, dat = NULL, type){
-  # if(grepl("=", ogy)){
-  #   type <- "mv"
-  # } else {
-  #   type <- "bin"
-  # }
-  # if(is.null(dat) & type == "mv"){
-  #   stop("A data frame, configTable, or a list specifying admissible \n
-  #        factor values must be provided for multi-valued models")
-  # }
-  # if(!is.null(dat) & type == "bin") {dat <- full.ct(ogy)}
-  # if(!is.null(dat) & type == "mv") {dat <- full.ct(dat)}
+  if(type == "bin" & is.null(dat)){
+    dat <- full.ct(ogy)
+  }
   tar_lhss <- y
   tar_outs <- names(y)
   tar_outs_flipped <- sapply(tar_outs, case_flipper) #fix for mv
@@ -196,9 +150,7 @@ check_comp_asf <- function(x, y, not_subbable, ogy, dat = NULL, type){
   
   ultimate_lhs <- ultimate_lhs1 <- y[outcome_match]
   idx_sub_from <- vector("logical", length(tar_outs))
-  
-  # while(any(toupper(tar_outs[!not_subbable]) %in% unlist(strsplit(toupper(ultimate_lhs), 
-  #                                                    "")))){
+
   while(any(sapply(toupper(tar_outs[!not_subbable]), 
             function(x) grepl(x, toupper(ultimate_lhs))))){
     sub_from_capmatch <- sapply(tar_outs, 
@@ -226,48 +178,39 @@ check_comp_asf <- function(x, y, not_subbable, ogy, dat = NULL, type){
       }  
     }
   }
-  #ogy <- paste0(tar_lhss, "<->", names(tar_lhss)) #stupid hack must go
-  #ogy <- paste0("(", ogy, ")")
-  #ogy <- paste0(ogy, collapse = "*")
+
   if(identical(ultimate_lhs, ultimate_lhs1)){
     subbed_lhs <- ultimate_lhs1
   } else {
     if(type == "mv"){
-      # fnames <- sapply(names(dat), 
-      #                  function(x) stringr::str_extract_all(ultimate_lhs, x)) #WILL NOT WORK
-      # posit_fnames <- sapply(names(dat), 
-      #                  function(x) stringr::str_locate_all(ultimate_lhs, x))
-      #this regex: "(?=)\\d|(?<=\\=).|\\(|\\)|\\*|\\+|\\=", perl = T
-      fnames <- unlist(strsplit(ultimate_lhs, 
-                                "(?=)\\d|(?<=\\=).|\\(|\\)|\\*|\\+|\\=",
-                                perl = TRUE))
-      fnames <- sapply(fnames, unique)
-      fnames <- unlist(fnames)
-      u_lhsdat <- selectCases(cond = ultimate_lhs,
-                              x = dat[,fnames])
-      cond <- getCond(u_lhsdat)
-      subbed_lhs <- rreduce(cond = cond, x = selectCases(ogy, x = dat), full = FALSE) 
+      cond <- get_mvcond(lhs = ultimate_lhs, dat = dat)
+    } else {
+      cond <- getCond(selectCases(ultimate_lhs))
     }
-     
+    subbed_lhs <- rreduce(cond = cond, x = selectCases(ogy, x = dat), full = FALSE) 
   }
-  # subbed_lhs <- rreduce(getCond(selectCases(ultimate_lhs)), #drop this if ultimate_lhs
-  #                       selectCases(ogy), full = FALSE) # is identical to og ultimate_lhs
   out <- paste0(subbed_lhs, "<->", tar_outs[outcome_match])
   return(out)
 }
 
+get_mvcond <- function(lhs, dat){
+  fnames <- extr_mv_facs(lhs)
+  u_lhsdat <- selectCases(cond = lhs,
+                          x = dat[,fnames])
+  cond <- getCond(u_lhsdat)
+  return(cond)
+}
 
-substitute_all <- function(x){
+
+substitute_all <- function(x, dat = NULL, type){
   x <- decompose_model(x)
   subbed <- chain_substituter(x)
   lhss <- subbed$lhss
-  #dnf_lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))
-  subbed$lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))
-  #d <- data.frame(dnf_lhss, subbed$rhss)
-  #new_asfs <- do.call("paste", c(d, sep = "<->"))
-  #new_asfs <- paste0("(", new_asfs, ")")
-  #new_csf <- paste0(new_asfs, collapse = "*")
-  #return(new_csf)
+  if(type == "mv"){
+    subbed$lhss <- unlist(lapply(lhss, function(x) get_mvcond(x, dat)))
+  } else {
+    subbed$lhss <- unlist(lapply(lhss, function(z) getCond(selectCases(z))))  
+  }
   return(subbed)
 }
 
@@ -309,34 +252,16 @@ chain_substituter <- function(x,
   chain_substituter(x, subbed_from = subbed_from)
 }
 
-# this one for the case where x is csf and submodel of y
-# is_comp_subtar <- function(x, y, out){
-is_comp_subtar <- function(x, y, out){  
-  x_expanded <- substitute_all(x)
-  # x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
-  #               function(x) rreduce(getCond(selectCases(x)), 
-  #                                   selectCases(y), full = FALSE)))
-  
+is_comp_subtar <- function(x, y, out, type, dat){  
+  x_expanded <- substitute_all(x, dat, type)
   x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
-                                   function(x) rreduce(getCond(selectCases(x)))))
-  x_expanded <- x_expanded[-1]
-  # new_asfs <- vector("character", length(x_expanded[[1]]))
-  # for(i in seq_along(x_expanded[[1]])){
-  #   new_asfs[i] <- paste0("(", 
-  #                         x_expanded$lhss[i], 
-  #                         "<->",
-  #                         x_expanded$rhss[i],
-  #                         ")")
-  #}
+                                   function(z) rreduce(cond = z, x = dat)))
   d <- data.frame(x_expanded$lhss, x_expanded$rhss)
   new_asfs <- do.call("paste", c(d, sep = "<->"))
   if(length(new_asfs) > 1){
     new_asfs <- paste0("(", new_asfs, ")")
   } 
   new_csf <- paste0(new_asfs, collapse = "*")
-  #out <- subin_target_ccomp(new_csf, y, out = out)
-  #attr(out, "og_y") <- y
-  #attr(out, "og_x") <- x 
   return(new_csf)
 } 
 
