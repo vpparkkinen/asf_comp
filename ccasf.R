@@ -274,7 +274,7 @@ mvdatgen <- function(x){
   #mv_values <- lapply(fct_max, function(x) `:`(0L, x))
   mv_values <- lapply(fct_u, 
                       function(x) {if(length(unique(x)) < 3){
-                        x <- x:(x+2)
+                        x <- min(x):(max(x)+(3-length(x)))
                       } else {
                         x <- x
                       }

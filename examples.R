@@ -156,7 +156,13 @@ is_compatible(x,y, dat = dat)
 x <- "(T+R<->Y)*(A+Y*K<->C)*(C*H+C*I<->E)"
 
 y <- "(B=2*D=0+D=1*B=1<->A=0)*(B=1*D=2+A=0*D=0<->C=1)"
-x <- "(B=2*D=0+B=1*D=1<->A=0)*(A=0*D=0+B=1*D=2<->C=1)"
+x <- "(B=2*D=0+D=1*B=1<->C=1)"
 dat <- mvdatgen(y)
-is_compatible(x,y, dat)
+is_compatible(x,y, dat) #what?
+
+y <- ("b*d+D")
+
+dat <- full.ct(list(A=1:3, B=1:3, C=0:2, D=1:2, E=0:2, F=1:3))
+
+randomCsf(dat, maxVarNum = 6)
 
