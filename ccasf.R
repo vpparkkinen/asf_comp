@@ -1,5 +1,5 @@
 library(cna)
-library(stringr)
+
 
 case_flipper <- function(x){ #fix for mv
   out <- ifelse(x == toupper(x), tolower(x), toupper(x))
@@ -12,7 +12,6 @@ decompose_model <- function(x){
   asfs <- unlist(extract_asf(x))
   rhss <- rhs(asfs)
   lhss <- lhs(asfs)
-  #lhs_lits <- lit_extract(lhss)
   out <- list(asfs = asfs, 
               rhss = rhss, 
               lhss = lhss)
@@ -31,8 +30,8 @@ ccheck_prep <- function(x,y){
   cand_lhss <- cand_decomp$lhss
   names(cand_lhss) <- cand_outs
   cand_facs <- lit_extract(cand_lhss)
-  #not_subbable <- toupper(tar_outs) %in% toupper(cand_facs)
-  not_subbable <- toupper(tar_outs) %in% c(toupper(cand_facs), toupper(cand_outs))
+  not_subbable <- toupper(tar_outs) %in% c(toupper(cand_facs), 
+                                           toupper(cand_outs))
   test_tar_lhss <- tar_lhss
   names(test_tar_lhss) <- tar_outs
   out <- list(target = y,
@@ -106,8 +105,6 @@ subin_target_ccomp <- function(x, y, out, dat = NULL, type){
                                          y,
                                          dat = dat,
                                          type = type)
-    # correct[i] <- is.submodel(prepared$candidate_asfs[!asf_subms][i], 
-    #                           subbed_tar_asfs[i])
     idx <- which(names(prepared$candidate_lhss) == names(cand_need_checking[i]))
     asf_cor <- is.submodel(prepared$candidate_asfs[idx],
                            subbed_tar_asfs[i])
@@ -188,7 +185,9 @@ check_comp_asf <- function(x, y, not_subbable, ogy, dat = NULL, type){
     } else {
       cond <- getCond(selectCases(ultimate_lhs))
     }
-    subbed_lhs <- rreduce(cond = cond, x = selectCases(ogy, x = dat), full = FALSE) 
+    subbed_lhs <- rreduce(cond = cond, 
+                          x = selectCases(ogy, x = dat), 
+                          full = FALSE) 
   }
   out <- paste0(subbed_lhs, "<->", tar_outs[outcome_match])
   return(out)
@@ -253,7 +252,7 @@ chain_substituter <- function(x,
   chain_substituter(x, subbed_from = subbed_from)
 }
 
-is_comp_subtar <- function(x, y, out, type, dat){  
+is_comp_subtar <- function(x, y, type, dat){  
   x_expanded <- substitute_all(x, dat, type)
   x_expanded$lhss <- unlist(lapply(x_expanded$lhss, 
                                    function(z) rreduce(cond = z, x = dat)))
@@ -270,8 +269,6 @@ is_comp_subtar <- function(x, y, out, type, dat){
 mvdatgen <- function(x){
   fct <- full.ct(x)
   fct_u <- apply(fct, 2, unique)
-  
-  #mv_values <- lapply(fct_max, function(x) `:`(0L, x))
   mv_values <- lapply(fct_u, 
                       function(x) {if(length(unique(x)) < 3){
                         x <- min(x):(max(x)+(3-length(x)))
@@ -279,8 +276,6 @@ mvdatgen <- function(x){
                         x <- x
                       }
                         return(x)})
-  
-  #out <- full.ct(cond = x, x = mv_values)
   out <- full.ct(x = mv_values)
   return(out)
 }
