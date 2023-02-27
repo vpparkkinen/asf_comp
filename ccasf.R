@@ -286,6 +286,10 @@ lit_extract <- function(lhs){
   return(out)
 }
 
+print.is_compatible <- function(x){
+  print(x[[1]])
+}
+
 
 
 

@@ -132,3 +132,15 @@ x <- "A*b+B*a+B*C<->F"
 dat <- full.ct(list(A=1:3, B=1:3, C=0:2, D=1:2, E=0:2, F=1:3))
 randomCsf(dat, maxVarNum = 6)
 
+GT <- "(C=1*A=1*B=0+A=1*B=2<->E=1)*(E=1*B=2+C=0*A=1*E=2+E=2*B=1<->G=1)*(B=0*G=0*E=2<->D=1)"
+
+d <- mvdatgen(GT)
+apply(d,2,unique)
+
+y <- "(C=1*A=1*B=0+A=1*B=2<->E=1)*(E=1*B=2+C=0*A=1*E=2+E=2*B=1<->G=1)*(B=0*G=0*E=2<->D=1)"
+full.dat <- ct2df(full.ct(list(A=0:2, B=0:2, C=0:2, D=0:2,E=0:2,G=0:2)))
+x <- "A=1*B=2+B=1*E=2+A=1*C=0*E=2<->G=1"
+is_compatible(x, y, dat=full.dat)
+
+
+
