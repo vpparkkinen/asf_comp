@@ -1,7 +1,7 @@
 library(cna)
 
 
-case_flipper <- function(x){ #fix for mv
+case_flipper <- function(x){
   out <- ifelse(x == toupper(x), tolower(x), toupper(x))
   return(out)
 }
@@ -74,7 +74,6 @@ is_compatible <- function(x, y, dat = NULL){
     attr(out, "why") <- "x is not inus wrt selectCases(y)"
     return(out)
   }
-  #is_sm <- is.submodel(x,y)
   is_sm <- fsubmodel_csf(x,y)
   c_asfcount <- unlist(strsplit(x, "<->"))
   is_x_csf <- length(c_asfcount) > 2
@@ -101,7 +100,6 @@ is_compatible <- function(x, y, dat = NULL){
 subin_target_ccomp <- function(x, y, out, dat = NULL, type){
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
-  #asf_subms <- is.submodel(prepared$candidate_asfs, y)
   asf_subms <- fsubmodel_csf(prepared$candidate_asfs, y)
   cand_need_checking <- prepared$candidate_lhss[!asf_subms]
   subbed_tar_asfs <- vector("character", length(prepared$target_lhss))
@@ -116,8 +114,6 @@ subin_target_ccomp <- function(x, y, out, dat = NULL, type){
                                          dat = dat,
                                          type = type)
     idx <- which(names(prepared$candidate_lhss) == names(cand_need_checking[i]))
-    # asf_cor <- is.submodel(prepared$candidate_asfs[idx],
-    #                        subbed_tar_asfs[i])
     asf_cor <- fsubmodel_asf(prepared$candidate_asfs[idx],
                            subbed_tar_asfs[i])
     correct[names(correct) == prepared$candidate_asfs[idx]] <- asf_cor
@@ -228,7 +224,7 @@ substitute_all <- function(x, dat = NULL, type){
 
 
 chain_substituter <- function(x, 
-                              subbed_from = vector("logical", length(x[[1]]))){
+                               subbed_from = vector("logical", length(x[[1]]))){
   sub_from_capmatch <- lapply(x$rhss, 
                               function(y) 
                                 grepl(y, x$lhss))
@@ -238,31 +234,78 @@ chain_substituter <- function(x,
                              function(y) 
                                grepl(y, x$lhss))
   id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
-  if(!any(c(id_sub_capflip, id_sub_capmatch))){
-    x <- lapply(x, function(y){y <- y[!subbed_from]; return(y)})
-    return(x)
+  while(any(c(id_sub_capflip, id_sub_capmatch))){
+    for(i in seq_along(sub_from_capmatch)){
+      if(id_sub_capmatch[i]){
+        x$lhss[sub_from_capmatch[[i]]] <- gsub(x$rhss[i], 
+                                               paste0("(", x$lhss[i], ")"), 
+                                               x$lhss[sub_from_capmatch[[i]]])
+      } 
+    }
+    for(i in seq_along(sub_from_capflip)){
+      if(id_sub_capflip[i]){
+        x$lhss[sub_from_capflip[[i]]] <- gsub(tolower(x$rhss[i]), 
+                                              paste0("!(", x$lhss[i], ")"), 
+                                              x$lhss[sub_from_capflip[[i]]])
+      } 
+    }
+    
+    wh_subbed_from <- which(subbed_from)
+    wh_capmatch <- which(id_sub_capmatch)
+    wh_capflip <- which(id_sub_capflip)
+    w_subbed <- unique(c(wh_subbed_from, wh_capmatch, wh_capflip))
+    subbed_from[w_subbed] <- TRUE
+    sub_from_capmatch <- lapply(x$rhss, 
+                                function(y) 
+                                  grepl(y, x$lhss))
+    id_sub_capmatch <- unlist(lapply(sub_from_capmatch, any))
+    
+    sub_from_capflip <- lapply(case_flipper(x$rhss), 
+                               function(y) 
+                                 grepl(y, x$lhss))
+    id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
   }
-  for(i in seq_along(sub_from_capmatch)){
-    if(id_sub_capmatch[i]){
-      x$lhss[sub_from_capmatch[[i]]] <- gsub(x$rhss[i], 
-                                              paste0("(", x$lhss[i], ")"), 
-                                              x$lhss[sub_from_capmatch[[i]]])
-    } 
-  }
-  for(i in seq_along(sub_from_capflip)){
-    if(id_sub_capflip[i]){
-      x$lhss[sub_from_capflip[[i]]] <- gsub(tolower(x$rhss[i]), 
-                                             paste0("!(", x$lhss[i], ")"), 
-                                             x$lhss[sub_from_capflip[[i]]])
-    } 
-  }
-  wh_subbed_from <- which(subbed_from)
-  wh_capmatch <- which(id_sub_capmatch)
-  wh_capflip <- which(id_sub_capflip)
-  w_subbed <- unique(c(wh_subbed_from, wh_capmatch, wh_capflip))
-  subbed_from[w_subbed] <- TRUE 
-  chain_substituter(x, subbed_from = subbed_from)
+  x <- lapply(x, function(y){y <- y[!subbed_from]; return(y)})
+  return(x)
 }
+
+
+# chain_substituter <- function(x, 
+#                               subbed_from = vector("logical", length(x[[1]]))){
+#   sub_from_capmatch <- lapply(x$rhss, 
+#                               function(y) 
+#                                 grepl(y, x$lhss))
+#   id_sub_capmatch <- unlist(lapply(sub_from_capmatch, any))
+#   
+#   sub_from_capflip <- lapply(case_flipper(x$rhss), 
+#                              function(y) 
+#                                grepl(y, x$lhss))
+#   id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
+#   if(!any(c(id_sub_capflip, id_sub_capmatch))){
+#     x <- lapply(x, function(y){y <- y[!subbed_from]; return(y)})
+#     return(x)
+#   }
+#   for(i in seq_along(sub_from_capmatch)){
+#     if(id_sub_capmatch[i]){
+#       x$lhss[sub_from_capmatch[[i]]] <- gsub(x$rhss[i], 
+#                                               paste0("(", x$lhss[i], ")"), 
+#                                               x$lhss[sub_from_capmatch[[i]]])
+#     } 
+#   }
+#   for(i in seq_along(sub_from_capflip)){
+#     if(id_sub_capflip[i]){
+#       x$lhss[sub_from_capflip[[i]]] <- gsub(tolower(x$rhss[i]), 
+#                                              paste0("!(", x$lhss[i], ")"), 
+#                                              x$lhss[sub_from_capflip[[i]]])
+#     } 
+#   }
+#   wh_subbed_from <- which(subbed_from)
+#   wh_capmatch <- which(id_sub_capmatch)
+#   wh_capflip <- which(id_sub_capflip)
+#   w_subbed <- unique(c(wh_subbed_from, wh_capmatch, wh_capflip))
+#   subbed_from[w_subbed] <- TRUE 
+#   chain_substituter(x, subbed_from = subbed_from)
+# }
 
 is_comp_subtar <- function(x, y, type, dat){  
   x_expanded <- substitute_all(x, dat, type)

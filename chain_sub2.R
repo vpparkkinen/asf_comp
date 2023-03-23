@@ -9,7 +9,7 @@ chain_substituter2 <- function(x,
                              function(y) 
                                grepl(y, x$lhss))
   id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
-  while(any(c(id_sub_capflip, id_sub_capmatch)) & !same){
+  while(any(c(id_sub_capflip, id_sub_capmatch))){
     for(i in seq_along(sub_from_capmatch)){
       if(id_sub_capmatch[i]){
         x$lhss[sub_from_capmatch[[i]]] <- gsub(x$rhss[i], 
@@ -46,4 +46,10 @@ chain_substituter2 <- function(x,
   x <- lapply(x, function(y){y <- y[!subbed_from]; return(y)})
   return(x)
 }
+
+# tm <- replicate(1000, randomCsf(8))
+# tm1 <- tm[!cyclic(tm)]
+tms <- lapply(tm, function(x) substitute_all(x, type = "bin"))
+tms2 <- lapply(tm, function(x) substitute_all2(x, type = "bin"))
+all.equal(tms,tms2)
 

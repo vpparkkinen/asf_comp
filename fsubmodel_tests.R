@@ -92,7 +92,7 @@ all(res_fsubmodel_asf_cor)
 
 res_fsubmodel_asf_cor <- vector(length = length(targets))
 for(i in seq_along(asf_targets)){
-  res_fsubmodel_asf_cor[i] <- fsubmodel_asf(cor_subs_asf[i], asf_targets[i])
+  res_fsubmodel_asf_cor[i] <- fsubmodel_csf(cor_subs_asf[i], asf_targets[i])
 }
 all(res_fsubmodel_asf_cor)
 

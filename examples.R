@@ -1,5 +1,18 @@
 library(testthat)
 
+mvdatgen <- function(x){
+  fct <- full.ct(x)
+  fct_u <- apply(fct, 2, unique)
+  mv_values <- lapply(fct_u, 
+                      function(x) {if(length(unique(x)) < 3){
+                        x <- min(x):(max(x)+(3-length(x)))
+                      } else {
+                        x <- x
+                      }
+                        return(x)})
+  out <- full.ct(x = mv_values)
+  return(out)
+}
 
 test_that("is_compatible() works", {
   y <-  "(T+R<->Y)*(A+Y*K<->C)*(C*H+C*I<->E)"
