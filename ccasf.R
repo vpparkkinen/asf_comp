@@ -29,7 +29,7 @@ ccheck_prep <- function(x,y){
   cand_outs <- cand_decomp$rhss
   cand_lhss <- cand_decomp$lhss
   names(cand_lhss) <- cand_outs
-  cand_facs <- lit_extract(cand_lhss)
+  cand_facs <- unlist(lit_extract(cand_lhss), use.names = FALSE)
   not_subbable <- toupper(tar_outs) %in% c(toupper(cand_facs), 
                                            toupper(cand_outs))
   test_tar_lhss <- tar_lhss
@@ -74,7 +74,8 @@ is_compatible <- function(x, y, dat = NULL){
     attr(out, "why") <- "x is not inus wrt selectCases(y)"
     return(out)
   }
-  is_sm <- is.submodel(x,y)
+  #is_sm <- is.submodel(x,y)
+  is_sm <- fsubmodel_csf(x,y)
   c_asfcount <- unlist(strsplit(x, "<->"))
   is_x_csf <- length(c_asfcount) > 2
   if(!is_x_csf & is_sm){
@@ -93,10 +94,12 @@ is_compatible <- function(x, y, dat = NULL){
 subin_target_ccomp <- function(x, y, out, dat = NULL, type){
   prepared <- ccheck_prep(x,y)
   prep_target <- prepared$target_lhss
-  asf_subms <- is.submodel(prepared$candidate_asfs, y)
+  #asf_subms <- is.submodel(prepared$candidate_asfs, y)
+  asf_subms <- fsubmodel_csf(prepared$candidate_asfs, y)
   cand_need_checking <- prepared$candidate_lhss[!asf_subms]
   subbed_tar_asfs <- vector("character", length(prepared$target_lhss))
   correct <- asf_subms
+  names(correct) <- prepared$candidate_asfs
 
   for(i in seq_along(cand_need_checking)){
     subbed_tar_asfs[i] <- check_comp_asf(cand_need_checking[i], 
@@ -106,7 +109,9 @@ subin_target_ccomp <- function(x, y, out, dat = NULL, type){
                                          dat = dat,
                                          type = type)
     idx <- which(names(prepared$candidate_lhss) == names(cand_need_checking[i]))
-    asf_cor <- is.submodel(prepared$candidate_asfs[idx],
+    # asf_cor <- is.submodel(prepared$candidate_asfs[idx],
+    #                        subbed_tar_asfs[i])
+    asf_cor <- fsubmodel_asf(prepared$candidate_asfs[idx],
                            subbed_tar_asfs[i])
     correct[names(correct) == prepared$candidate_asfs[idx]] <- asf_cor
   }
@@ -281,8 +286,8 @@ mvdatgen <- function(x){
 }
 
 lit_extract <- function(lhs){
-  d <- unlist(strsplit(lhs, "\\+"))
-  out <- unlist(strsplit(d, "\\*"))
+  d <- strsplit(lhs, "\\+")
+  out <- lapply(d, function(x) strsplit(x, "\\*"))
   return(out)
 }
 
