@@ -120,6 +120,10 @@ test_that("is_compatible() works", {
   dat <- mvdatgen(y)
   expect_false(is_compatible(x,y, dat))
   
+  y <- "(C+D<->E)*(A+B<->C)*(E+F<->A)"
+  x <- "(C+D<->E)*(A+B<->C)"
+  expect_true(is_compatible(x,y))
+  
 })
 
 # this will flip between TRUE/FALSE because of rreduce()

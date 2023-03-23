@@ -1,6 +1,6 @@
 chain_substituter2 <- function(x, 
                               subbed_from = vector("logical", length(x[[1]]))){
-  sub_from_capmatch <- sapply(x$rhss, 
+  sub_from_capmatch <- lapply(x$rhss, 
                               function(y) 
                                 grepl(y, x$lhss))
   id_sub_capmatch <- unlist(lapply(sub_from_capmatch, any))
@@ -9,7 +9,7 @@ chain_substituter2 <- function(x,
                              function(y) 
                                grepl(y, x$lhss))
   id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
-  while(any(c(id_sub_capflip, id_sub_capmatch))){
+  while(any(c(id_sub_capflip, id_sub_capmatch)) & !same){
     for(i in seq_along(sub_from_capmatch)){
       if(id_sub_capmatch[i]){
         x$lhss[sub_from_capmatch[[i]]] <- gsub(x$rhss[i], 
@@ -38,7 +38,7 @@ chain_substituter2 <- function(x,
     sub_from_capflip <- lapply(case_flipper(x$rhss), 
                                function(y) 
                                  grepl(y, x$lhss))
-    id_sub_capflip <- unlist(lapply(sub_from_capflip, any))  
+    id_sub_capflip <- unlist(lapply(sub_from_capflip, any))
   }
   
   # chain_substituter(x, subbed_from = subbed_from)

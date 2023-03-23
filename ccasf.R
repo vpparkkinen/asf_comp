@@ -79,14 +79,21 @@ is_compatible <- function(x, y, dat = NULL){
   c_asfcount <- unlist(strsplit(x, "<->"))
   is_x_csf <- length(c_asfcount) > 2
   if(!is_x_csf & is_sm){
-     out[1] <- TRUE
-     attr(out, "why") <- "x is asf and a submodel of y"
-     return(out)
+    out[1] <- TRUE
+    attr(out, "why") <- "x is asf and a submodel of y"
+    return(out)
   }
-   if(is_x_csf & is_sm){
+  if(cyclic(x) || cyclic(y)){
+    out[1] <- is_sm
+    attr(out, "why") <- "x or y is cyclic, fall back on testing submodel relation"
+    return(out)
+  }
+    
+  
+  if(is_x_csf & is_sm){
      x <- is_comp_subtar(x, dat = dat, type = type)
      attr(out, "why") <- "x is a csf and a submodel of y, substitute in x before checking compatibility"
-   }
+  }
   out <- subin_target_ccomp(x , y , out, dat, type)
   return(out)
 }
